@@ -38,33 +38,58 @@ def api_request(search):
         order='date',
         type='video',
         # videoDuration="",
-        maxResults=50
+        maxResults=50,
+        # videoEmbeddable="true"
+        # videoDuration=""
+        # videoDefenition=""
+        # publishedBefore=""
+        # publishedAfter=""
+
     )
     response = request.execute()
     files = response["items"]
     # pprint(files)
-    for v_id in files:
-        # title of video as a string
-        title = str(v_id["snippet"]["title"]).lower()
-        # check if search query is in video title before appending to video ID list
-        if num and format_choice in title:
-            if len(title) <= 18:
-                print(len(title))
-                print(title)
-                videos.append(v_id["id"]["videoId"])
-            else:
-                pass
+    loop_is_on = True
+    while loop_is_on:
+        for v_id in files:
+            # title of video as a string
+            title = str(v_id["snippet"]["title"]).lower()
+            # check if search query is in video title before appending to video ID list
+            if num and format_choice in title:
+                if len(title) <= 18:
+                    videos.append(v_id["id"]["videoId"])
+                else:
+                    pass
+        if len(videos) > 1:
+            loop_is_on = False
+        else:
+            pass
     video_choice = random.choice(videos)
     return video_choice
 
 
-formats = ["mp4", "wmv", "avi", "mov", "img", "gopr"]
-num = number()
-format_choice = random.choice(formats)
-search_query = query(num, format_choice)
-video_id = api_request(search_query)
+for _ in range (0, 100):
+    formats = ["mp4", "wmv", "avi", "mov", "img", "gopr"]
+    num = number()
+    format_choice = random.choice(formats)
+    search_query = query(num, format_choice)
+    print(search_query)
+    video_id = api_request(search_query)
+    yt = YouTube(f"https://www.youtube.com/watch?v={video_id}")
+    yt = yt.streams.get_highest_resolution()
+    file_size = yt.filesize
+    print(file_size)
+    video_name = yt.title
+    if file_size < 1e8:
+        yt.download(output_path='~/Desktop', filename_prefix=f"{video_id}___")
+        # filename = yt.title + "/" + video_id,
+    else:
+        pass
+
+
+
 
 
 # opens search query and random video separately
-webbrowser.open_new_tab(f"https://www.youtube.com/watch?v={video_id}")
-webbrowser.open_new_tab(f"https://www.youtube.com/results?search_query={search_query}")
+# webbrowser.open_new_tab(f"https://www.youtube.com/watch?v={video_id}")
+# webbrowser.open_new_tab(f"https://www.youtube.com/results?search_query={search_query}")
