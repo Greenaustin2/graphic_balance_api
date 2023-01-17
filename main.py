@@ -6,7 +6,7 @@ from pprint import pprint
 import webbrowser
 from pytube import YouTube
 
-api_key = "AIzaSyBMOq2KUZg7xFc29bGF9VKQgRHYMEX7tpQ"
+api_key = "AIzaSyBBFpmVkJLy-5iy-4nMGjlzEZWoAfziuuU"
 youtube = build('youtube', 'v3', developerKey=api_key)
 
 
@@ -16,15 +16,15 @@ def number():
     return generated_number.zfill(4)
 
 
-def query(number_input, format_choice):
+def query(number_input, format_option):
     """Outputs 4-digit number formatted with randomly chosen file type from file type list. takes number as input"""
-    if format_choice == "gopr":
-        return f"{format_choice}{number_input}"
-    elif format_choice == formats[0] or format_choice == formats[1] or format_choice == formats[2] or format_choice == \
+    if format_option == "gopr":
+        return f"{format_option}{number_input}"
+    elif format_option == formats[0] or format_option == formats[1] or format_option == formats[2] or format_option == \
             formats[3]:
-        return f"{number_input}.{format_choice}"
+        return f"{number_input}.{format_option}"
     else:
-        return f"{format_choice}+{number_input}"
+        return f"{format_option}+{number_input}"
 
 
 def api_request(search):
@@ -35,13 +35,13 @@ def api_request(search):
         part='snippet',
         q=search,
         # Choose order: date, rating, viewCount, relevance, title, videoCount
-        order='date',
+        order='relevance',
         type='video',
         # videoDuration="",
         maxResults=50,
         # videoEmbeddable="true"
         # videoDuration=""
-        # videoDefenition=""
+        videoDefinition="high",
         # publishedBefore=""
         # publishedAfter=""
 
@@ -68,6 +68,13 @@ def api_request(search):
     return video_choice
 
 
+def is_file_size(youtube_file, size_max):
+    if youtube_file < size_max:
+        return True
+    else:
+        return False
+
+
 for _ in range (0, 100):
     formats = ["mp4", "wmv", "avi", "mov", "img", "gopr"]
     num = number()
@@ -76,15 +83,18 @@ for _ in range (0, 100):
     print(search_query)
     video_id = api_request(search_query)
     yt = YouTube(f"https://www.youtube.com/watch?v={video_id}")
+    vid_info = f"{video_id}_{yt.author}_{yt.publish_date.date()}_{yt.views}_"
+    #  _ {yt.publish_date.date()} _ {yt.views}
     yt = yt.streams.get_highest_resolution()
-    file_size = yt.filesize
-    print(file_size)
-    video_name = yt.title
-    if file_size < 1e8:
-        yt.download(output_path='~/Desktop', filename_prefix=f"{video_id}___")
-        # filename = yt.title + "/" + video_id,
+
+    if is_file_size(yt.filesize, 1e8):
+        yt.download(output_path='~/Desktop', filename_prefix=vid_info)
     else:
         pass
+    # file_size = yt.filesize
+    # print(file_size)
+
+
 
 
 
