@@ -13,9 +13,8 @@ import shutil
 from tqdm import tqdm
 import sys
 
-API_KEY = "AIzaSyBBFpmVkJLy-5iy-4nMGjlzEZWoAfziuuU"
+API_KEY = "AIzaSyDBxVN6Jb3pYqPfsOM9NdgzItzivNX27QI"
 YOUTUBE = build('youtube', 'v3', developerKey=API_KEY)
-
 
 
 def current_time():
@@ -28,9 +27,10 @@ class Search:
     """includes all api functionality"""
 
     def __init__(self):
-        self.formats = ["mp4", "wmv", "avi", "mov", "img", "gopr"]
-        self.number = 0
+        self.formats = ["mp4", "wmv", "avi", "mov", "img"]
         self.format = ''
+        # self.searches = self.query()
+        self.number = 0
         self.max_results = 50
         self.order = 'relevance'
         self.video_def = 'any'
@@ -43,11 +43,10 @@ class Search:
         self.file_size = 1e8
         self.random = 'yes'
         self.published_before = current_time()
-        self.published_after = '2005-04-23T00:00:00Z'
-        self.query()
-        # self.query()
+        # self.search = self.query()
+        self.published_after = '2015-04-23T00:00:00Z'
         # self.location = ''
-        # self.location_rad = ''
+        # self.location_radius = ''
 
     def query(self):
         """Outputs 4-digit number formatted with randomly chosen file type from file type list. takes number as input"""
@@ -62,63 +61,73 @@ class Search:
 
     def api_request(self):
         """Conducts search as per search criteria. A list of video ID's are compiled in a list, chosen at random"""
-        videos = []
         # API search criteria
-        # print(self.query)
-        request = YOUTUBE.search().list(
-            part='snippet',
-            q=self.query(),
-            order=self.order,
-            type=self.type,
-            maxResults=self.max_results,
-            videoDefinition=self.video_def,
-            videoEmbeddable=self.embed,
-            videoDuration=self.video_duration,
-            publishedBefore=self.published_before,
-
-            # publishedAfter=self.published_after,
-            # location=self.location,
-            # locationRadius=self.location_rad,
-        )
-        response = request.execute()
-        files = response["items"]
-        loop_is_on = True
-        while loop_is_on:
+        while True:
+            videos = []
+            query = self.query()
+            request = YOUTUBE.search().list(
+                part='snippet',
+                q=query,
+                order=self.order,
+                type=self.type,
+                maxResults=self.max_results,
+                videoDefinition=self.video_def,
+                videoEmbeddable=self.embed,
+                videoDuration=self.video_duration,
+                publishedBefore=self.published_before,
+                publishedAfter=self.published_after,
+                # location=self.location,
+                # locationRadius=self.location_radius,
+            )
+            response = request.execute()
+            files = response["items"]
             for v_id in files:
                 # title of video as a string
                 title = str(v_id["snippet"]["title"]).lower()
                 # check if search query is in video title before appending to video ID list
-                if self.number and self.format in title:
+                if str(self.number) in title and self.format in title:
                     if len(title) <= self.title_chars:
                         videos.append(v_id["id"]["videoId"])
                     else:
                         pass
             if len(videos) > 1:
-                loop_is_on = False
+                return videos, query
             else:
-                pass
-        return videos
+                continue
+
+
 # ADD DOWNLOAD PROGRESS BAR
 
     def download(self):
+        x = 1
         if self.random == 'yes':
             for _ in range(0, self.video_limit):
-                video_id = random.choice(self.api_request())
+                print('_')
+                videos, query = self.api_request()
+                print('__')
+                video_id = random.choice(videos)
+                print('___')
                 yt = YouTube(f"https://www.youtube.com/watch?v={video_id}")
+                print('____')
                 vid_info = f"{video_id}_{yt.author}_{yt.channel_id}_{yt.publish_date.date()}_{yt.views}_"
+                print('_____')
                 yt = yt.streams.get_highest_resolution()
+                print('______')
                 if yt.filesize < self.file_size:
-                    print(f"downloading {video_id}")
+                    print(f"({x}) downloading {query}")
+                    x += 1
                     yt.download(output_path=self.output_path, filename_prefix=vid_info)
+                    print("***")
                     with open("search_history.txt", mode='a') as search:
-                        search.write(f"{self.query()}\n")
+                        search.write(f"{query}\n")
 
                     # create list and append each downloaded videos file size and use to calculate total download limit
                 else:
+                    print("file too large")
                     continue
         elif self.random == 'no':
             video_id = self.api_request()
-            print(f"downloading {self.query}...")
+            print(f"downloading {video_id}...")
             for _ in range(0, self.video_limit):
                 yt = YouTube(f"https://www.youtube.com/watch?v={video_id[_]}")
                 vid_info = f"{video_id[_]}_{yt.publish_date.date()}_{yt.views}_"
@@ -161,34 +170,6 @@ class Files:
         self.origin_directory = '/volumes/graphic_balance/01_22_23'
         self.destination_directory = '/volumes/graphic_balance/01_22_23'
 
-    # def channel_download(self):
-    #     """retrieves channel address from single videos in specified folders and downloads contents of channel"""
-    #     video_id_list = []
-    #     video_file_names = []
-    #     file = 0
-    #     directory = os.listdir(self.origin_directory)
-    #     for file in directory:
-    #         if file.endswith(".mp4"):
-    #             video_id_list.append(file[:11])
-    #             video_file_names.append(file)
-    #     for video in video_id_list:
-    #         x = YouTube("https://www.youtube.com/watch?v=" + video)
-    #         curl = x.channel_url
-    #         c = Channel(curl)
-    #         # make download directory
-    #         directory = c.channel_name
-    #         path = os.path.join(self.destination_directory, directory)
-    #         os.mkdir(path)
-    #         for videos in c.videos:
-    #             for ids in c.video_urls:
-    #                 vid_id = ids[-11:]
-    #                 yt = YouTube(ids)
-    #                 vid_info = f"{vid_id}_{yt.publish_date.date()}_{yt.views}_"
-    #                 print(f"downloading {vid_info}")
-    #                 videos.streams.get_highest_resolution().download(output_path=path, filename_prefix=vid_info)
-    #         # for file in video_file_names:
-    #         #     shutil.move(self.origin_directory + file, path)
-
     def channel_download(self):
         video_id_list = []
         directory = os.listdir(self.origin_directory)
@@ -200,25 +181,31 @@ class Files:
                 c = Channel(curl)
                 path = os.path.join(self.destination_directory, c.channel_name)
                 os.mkdir(path)
+                x = 1
                 for videos in c.video_urls:
-                    try:
-                        yt = YouTube(videos)
-                        vid_info = f"{yt.video_id}_{yt.publish_date.date()}_{yt.views}_"
-                        print(f"downloading {vid_info}")
-                        yt.streams.get_highest_resolution().download(output_path=path, filename_prefix=vid_info)
-                    except:
-                        pass
+                    yt = YouTube(videos)
+                    vid_info = f"{yt.video_id}_{yt.publish_date.date()}_{yt.views}_"
+                    print(f"downloading ({x}/{len(c.video_urls)}) {vid_info}")
+                    yt.streams.get_highest_resolution().download(output_path=path, filename_prefix=vid_info)
+                    x += 1
                 shutil.move(self.origin_directory + file, path)
+    def upload(self):
+        directory = os.listdir(self.origin_directory)
+
 
     def channel_browser(self):
         directory = os.listdir(self.origin_directory)
         print(len(directory))
         if len(directory) > 10:
+            counter = 0
             for file in directory:
                 if file.endswith('.mp4'):
                     video_id = file[:11]
                     link = "https://www.youtube.com/watch?v=" + video_id
-                    print(link)
+                    x = YouTube(link)
+                    curl = x.channel_url
+                    print(f"({counter}) {curl}")
+                    counter += 1
 
         else:
             for file in directory:

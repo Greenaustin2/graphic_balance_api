@@ -37,25 +37,26 @@ date = current_time()
 # Stream // will open videos from search query, takes 1 positional argument of int for number of results
 
 search.max_results = 50
-search.video_definition = 'high'
+search.video_def = 'high'
 search.video_duration = 'any'
 search.title_chars = 18
 search.embed = 'any'
 search.type = 'video'
 search.video_limit = 100
-search.output_path = '/Volumes/graphic_balance/01_25_23'
-search.order = 'relevance'
-search.file_size = 2e8
+search.output_path = '/Volumes/graphic_balance/02_06_23'
+search.order = 'date'
+search.file_size = 1e8
 search.random = 'yes'
 # search.formats = 'img'
 # search.query = 'video'
 search.published_before = current_time()
-search.published_after = '2005-04-23T00:00:00Z'
-# api.location =
-# api.location_radius =
+search.published_after = '2015-04-23T00:00:00Z'
+# 2005
+# search.location = '40.702989, -73.904594'
+# search.location_radius = '5km'
 
-
-# search.download()
+# #
+search.download()
 # search.stream()
 
 # [--------------------------------------------------------------------------------------------------]
@@ -63,10 +64,10 @@ search.published_after = '2005-04-23T00:00:00Z'
 # Origin Directory // path to files whose channels intend to be downloaded
 # Destination Directory // path to directory in which channel folders will be created
 
-files.origin_directory = '/Volumes/graphic_balance/01_22_23/links/'
-files.destination_directory = '/Volumes/graphic_balance/01_22_23/channels/'
+files.origin_directory = '/Volumes/graphic_balance/01_31_23/to_dl/'
+files.destination_directory = '/Volumes/graphic_balance/01_31_23/channels/'
 
-files.channel_browser()
+# files.channel_browser()
 # files.channel_download()
 
 
