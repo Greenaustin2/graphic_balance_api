@@ -12,6 +12,7 @@ from yt import Files
 from yt import Playlists
 from yt import current_time
 
+
 files = Files()
 search = Search()
 playlists = Playlists()
@@ -36,6 +37,9 @@ date = current_time()
 # Random // 'yes' will download one video per query, while 'no' will download videos from a single query
 # Stream // will open videos from search query, takes 1 positional argument of int for number of results
 
+
+# INCORPORATE KWARGS INTO SEARCH, TKINTER GUI
+
 search.max_results = 50
 search.video_def = 'high'
 search.video_duration = 'any'
@@ -43,9 +47,9 @@ search.title_chars = 18
 search.embed = 'any'
 search.type = 'video'
 search.video_limit = 100
-search.output_path = '/Volumes/graphic_balance/02_06_23'
+search.output_path = '/Volumes/graphic_balance/03_06_23'
 search.order = 'date'
-search.file_size = 1e8
+search.file_size = 2e8
 search.random = 'yes'
 # search.formats = 'img'
 # search.query = 'video'
@@ -56,7 +60,7 @@ search.published_after = '2015-04-23T00:00:00Z'
 # search.location_radius = '5km'
 
 # #
-search.download()
+# search.download()
 # search.stream()
 
 # [--------------------------------------------------------------------------------------------------]
@@ -64,19 +68,20 @@ search.download()
 # Origin Directory // path to files whose channels intend to be downloaded
 # Destination Directory // path to directory in which channel folders will be created
 
-files.origin_directory = '/Volumes/graphic_balance/01_31_23/to_dl/'
-files.destination_directory = '/Volumes/graphic_balance/01_31_23/channels/'
+files.origin_directory = '/Volumes/graphic_balance/02_13_23/to_dl/'
+files.destination_directory = '/Volumes/graphic_balance/02_13_23/channels/'
 
 # files.channel_browser()
-# files.channel_download()
-
+files.channel_download()
+# files.channel_reformat()
+# files.channel_length('7ZQLupFGZWY')
 
 # [--------------------------------------------------------------------------------------------------]
 #~playlist~playlist~playlist~playlist~playlist~playlist~playlist~playlist~playlist~playlist~playlist~
 
 # Destination Directory // location for downloads to be stored
 
-playlists.destination_directory = '/Volumes/graphic_balance/01_21_23/selects/inspect/'
+playlists.destination_directory = '/Volumes/graphic_balance/02_07_23/'
 #
 # playlists.download('https://www.youtube.com/playlist?list=PLY7pdVS9M2Bbu0ppeifXs9mu5xQootY88')
 

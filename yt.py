@@ -13,14 +13,25 @@ import shutil
 from tqdm import tqdm
 import sys
 
-API_KEY = "AIzaSyDBxVN6Jb3pYqPfsOM9NdgzItzivNX27QI"
-YOUTUBE = build('youtube', 'v3', developerKey=API_KEY)
+API_KEY = [
+    "AIzaSyBesfjYTtAk5vOqCA549-3zr4d4GlCbMvA",
+    "AIzaSyBLwGPRTTLqwPu36ArhTCe9wfaASMaFP7g",
+    "AIzaSyBbjPfpogUhfCptQKixNdKI445O_XFP3hs",
+    "AIzaSyBMOq2KUZg7xFc29bGF9VKQgRHYMEX7tpQ",
+    "AIzaSyBBFpmVkJLy-5iy-4nMGjlzEZWoAfziuuU",
+    "AIzaSyDBxVN6Jb3pYqPfsOM9NdgzItzivNX27QI"
+    ]
+# API_KEY = "AIzaSyDBxVN6Jb3pYqPfsOM9NdgzItzivNX27QI"
+YOUTUBE = build('youtube', 'v3', developerKey=API_KEY[0])
 
 
 def current_time():
     utc_now = datetime.datetime.utcnow()
     return utc_now.strftime('%Y-%m-%dT%H:%M:%SZ')
     # utc_now.replace('+00:00', 'Z')
+
+
+
 
 
 class Search:
@@ -43,6 +54,8 @@ class Search:
         self.file_size = 1e8
         self.random = 'yes'
         self.published_before = current_time()
+        self.api_key = ["AIzaSyBesfjYTtAk5vOqCA549-3zr4d4GlCbMvA", "AIzaSyBLwGPRTTLqwPu36ArhTCe9wfaASMaFP7g", "AIzaSyBbjPfpogUhfCptQKixNdKI445O_XFP3hs", "AIzaSyBMOq2KUZg7xFc29bGF9VKQgRHYMEX7tpQ", "AIzaSyBBFpmVkJLy-5iy-4nMGjlzEZWoAfziuuU", "AIzaSyDBxVN6Jb3pYqPfsOM9NdgzItzivNX27QI"
+    ]
         # self.search = self.query()
         self.published_after = '2015-04-23T00:00:00Z'
         # self.location = ''
@@ -95,11 +108,11 @@ class Search:
             else:
                 continue
 
-
 # ADD DOWNLOAD PROGRESS BAR
 
     def download(self):
         x = 1
+        y = 0
         if self.random == 'yes':
             for _ in range(0, self.video_limit):
                 print('_')
@@ -180,31 +193,52 @@ class Files:
                 curl = x.channel_url
                 c = Channel(curl)
                 path = os.path.join(self.destination_directory, c.channel_name)
-                os.mkdir(path)
-                x = 1
-                for videos in c.video_urls:
-                    yt = YouTube(videos)
-                    vid_info = f"{yt.video_id}_{yt.publish_date.date()}_{yt.views}_"
-                    print(f"downloading ({x}/{len(c.video_urls)}) {vid_info}")
-                    yt.streams.get_highest_resolution().download(output_path=path, filename_prefix=vid_info)
-                    x += 1
-                shutil.move(self.origin_directory + file, path)
-    def upload(self):
-        directory = os.listdir(self.origin_directory)
+                try:
+                    os.mkdir(path)
+                except FileExistsError:
+                    pass
+                finally:
+                    x = 1
+                    for videos in c.video_urls:
+                        yt = YouTube(videos)
+                        vid_info = f"{yt.video_id}_{yt.publish_date.date()}_{yt.views}_"
+                        print(f"downloading ({x}/{len(c.video_urls)}) {vid_info}")
+                        yt.streams.get_highest_resolution().download(output_path=path, filename_prefix=vid_info)
+                        x += 1
+                    shutil.move(self.origin_directory + file, path)
 
+    def channel_reformat(self):
+        folders = os.listdir(self.origin_directory)
+        for folder in folders:
+            try:
+                directory = os.listdir(os.path.join(self.origin_directory, folder))
+                print(directory)
+            except (FileNotFoundError, NotADirectoryError) as error:
+                print(error)
+                continue
+            for file in directory:
+                if file.endswith(".mp4"):
+                    folder = os.path.join(self.origin_directory, folder)
+                    file_name = "".join(file[12:-4] + "_" + file[:11] + ".mp4")
+                    os.rename(os.path.join(folder, file), os.path.join(folder, file_name))
+
+    # def upload(self):
+    #     directory = os.listdir(self.origin_directory)
 
     def channel_browser(self):
         directory = os.listdir(self.origin_directory)
         print(len(directory))
         if len(directory) > 10:
-            counter = 0
+            counter = 1
             for file in directory:
                 if file.endswith('.mp4'):
                     video_id = file[:11]
                     link = "https://www.youtube.com/watch?v=" + video_id
                     x = YouTube(link)
                     curl = x.channel_url
+                    c = Channel(curl)
                     print(f"({counter}) {curl}")
+                    # {len(c.video_urls)}
                     counter += 1
 
         else:
@@ -215,6 +249,12 @@ class Files:
                     x = YouTube(link)
                     curl = x.channel_url
                     webbrowser.open_new_tab(curl)
+
+    def channel_length(self, video_id):
+        x = YouTube("https://www.youtube.com/watch?v=" + video_id)
+        curl = x.channel_url
+        c = Channel(curl)
+        print(f"{len(c.video_urls)} videos.")
 
 
 class Playlists:
